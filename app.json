@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "reportes",
+    "slug": "reportes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions":  ["android.permission.MANAGE_MEDIA", "android.permission.MANAGE_EXTERNAL_STORAGE","ACCESS_BACKGROUND_LOCATION"],
+      "package": "com.alexft257.reportes"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "36fc6671-9110-4744-b606-7866011d279c"
+      }
+    }
+
+  }
+}
