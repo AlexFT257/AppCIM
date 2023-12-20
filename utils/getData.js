@@ -47,7 +47,7 @@ const GetData = async (collectionReq, id, getOne) => {
       .then((data) => {
         const { documents } = data;
        /*  console.log(data); */
-        console.log("data", documents[0]);
+        /* console.log("data", documents[0]); */
         // console.log("Documents",documents)
         return documents;
       })

@@ -8,17 +8,23 @@ import {
   FlatList,
   Button,
 } from "react-native";
+import { AntDesign } from "@expo/vector-icons"; 
+
 
 const StatusPage = (props) => {
   const [status, setStatus] = useState("");
+  const [statuses, setStatuses] = useState("");
+  
   const id = props.route.params.id;
 
   const fetchStatus = async () => {
-    await GetData("Status", id, true).then((data) => {
-      if (!Array.isArray(data)) {
+    await GetData("Status", id, false).then((data) => {
+      if (!data || !Array.isArray(data)) {
         return;
       }
       setStatus(data[0]);
+      setStatuses(data);
+
       console.log("Status", status);
     });
   };
@@ -30,6 +36,59 @@ const StatusPage = (props) => {
   // 0 bueno 1 malo
   const type = status.type === 0 ? "Bien" : "Mal";
 
+  const ViewItem = ({ item }) => {
+    const formatDate = (date) => {
+      return new Date(date).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const iconRender = (type) => {
+        return (
+          <AntDesign
+            name="checkcircleo"
+            size={30}
+            style={{ marginRight: 20, marginLeft: 10, color:( type == 1 ? "red" : "green" ) }}
+          />
+        );
+      
+    };
+
+    return (
+      <View style={styles.card}>
+        <TouchableOpacity style={styles.containerRow} onPress={() => {}}>
+          {iconRender(item.type)}
+          <View >
+            <Text style={{ fontSize : (item.info.length < 18 ? 14 : 12) }}>
+              {formatDate(item.date)} {"->"}{" "}
+              {item.info}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+
+  const List = () => {
+    if(!statuses){
+      return (<></>)
+    }
+    return (
+      <FlatList
+        data={statuses.map((dat) => {
+          return { ...dat, key: dat._id };
+        })}
+        itemSeparatorComponent={() => <Text> </Text>}
+        renderItem={({ item }) => <ViewItem key={item.date} item={item} />}
+      />
+    );
+  };
+
   return (
     <View>
       <View style={styles.card}>
@@ -37,6 +96,7 @@ const StatusPage = (props) => {
         <Text style={styles.h1}>Estado: <Text style={styles.h2}>{status.info} </Text> </Text>
         <Text style={styles.h1}>Tipo: <Text style={styles.h2}>{type}</Text></Text>
       </View>
+      <List/>
     </View>
   );
 };

@@ -24,36 +24,57 @@ const StadisticsList = (cosas) => {
       if (!Array.isArray(data)) {
         return;
       }
-      setStadistics(data);
+      
+      const sortedArray = data.sort((a, b) => {
+        // Convert the date strings to Date objects for comparison
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+
+        // Compare the dates (latest to oldest)
+        return dateB - dateA;
+      });
+
+      setStadistics(sortedArray);
       // console.log(data);
     });
   }, []);
 
+  console.log("stats", stadistics);
+
   const generateExcel = async () => {
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(stadistics.map((stat)=>{
+    const ws = XLSX.utils.json_to_sheet(
+      stadistics.map((stat) => {
         delete stat._id;
-        
-        return {...stat}
-    }));
+
+        return { ...stat };
+      })
+    );
 
     XLSX.utils.book_append_sheet(wb, ws, "Stadistics");
     const wbout = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
 
     const uri = `content://com.android.externalstorage.documents/tree/home%3A`;
-    const fileName = "Stadisticas_"+ stadistics[stadistics.length - 1].date.replace(":", "_");
+    const fileName =
+      "Stadisticas_" + stadistics[stadistics.length - 1].date.replace(":", "_");
 
-    await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync( uri )
-      .then( async (permission) => {
+    await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(
+      uri
+    )
+      .then(async (permission) => {
         await FileSystem.StorageAccessFramework.createFileAsync(
           permission.directoryUri,
           fileName,
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
           .then(async (filedir) => {
-            await FileSystem.StorageAccessFramework.writeAsStringAsync(filedir, wbout, {
-              encoding: FileSystem.EncodingType.Base64,
-            })
+            await FileSystem.StorageAccessFramework.writeAsStringAsync(
+              filedir,
+              wbout,
+              {
+                encoding: FileSystem.EncodingType.Base64,
+              }
+            )
               .then(() => {
                 console.log("Archivo creado", filedir);
               })
@@ -64,17 +85,18 @@ const StadisticsList = (cosas) => {
           .catch((e) => {
             console.log("Error en Crear archivo", e);
           });
-
       })
       .catch((e) => {
         console.log("Error permisos", e);
       });
 
-      await Sharing.shareAsync(uri).then((res)=>{
-        console.log(res)
-      }).catch((e)=>{
-        console.log(e)
+    await Sharing.shareAsync(uri)
+      .then((res) => {
+        console.log(res);
       })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 
   const ViewItem = ({ item }) => {
@@ -123,10 +145,12 @@ const StadisticsList = (cosas) => {
     );
   };
 
-  const List = ({ id }) => {
+  const List = () => {
     return (
       <FlatList
-        data={stadistics.reverse()}
+        data={stadistics.map((dat) => {
+          return { ...dat, key: dat._id };
+        })}
         itemSeparatorComponent={() => <Text> </Text>}
         renderItem={({ item }) => <ViewItem key={item.date} item={item} />}
       />

@@ -33,6 +33,7 @@ const openGoogleMaps = (latitude, longitude) => {
 
 const HomeScreen = ({ navigation }) => {
   const [devices, setDevices] = useState([]);
+  const [fetching, setFetching]  =useState(true)
 
   const navigateToMap = () => {
     // Navigate to the map screen with latitude and longitude
@@ -40,14 +41,18 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const fetchData = async () => {
+    setFetching(true)
     setDevices([]);
     let currentPos;
     let currentStatus;
 
     for (let id = 1; id < 13; id++) {
+      currentPos = undefined;
+      currentStatus = undefined;
+
       await GetData("Position", id, true)
         .then((data) => {
-          if (Array.isArray(data) && data[data.length - 1].latitude) {
+          if (data && Array.isArray(data) && data.length > 0 && data[data.length - 1].latitude) {
             currentPos = {
               latitude: data[data.length - 1].latitude,
               longitude: data[data.length - 1].longitude,
@@ -62,40 +67,42 @@ const HomeScreen = ({ navigation }) => {
 
       await GetData("Status", id, true)
         .then((data) => {
-          if (Array.isArray(data) && data[data.length - 1].info) {
+          if (data && Array.isArray(data) && data.length > 0 && data[data.length - 1].info) {
             currentStatus = {
               info: data[data.length - 1].info,
               type: data[data.length - 1].type,
             };
           }
-
         })
         .catch((e) => {
-          console.log(e);
+          //console.log(e);
         });
 
-      if (!currentPos || !currentStatus) {
-        continue;
+        console.log("AAAAAAAA",currentPos,"BBB", currentStatus)
+
+      if (currentStatus != undefined) {
+        setDevices((prev) => [
+          ...prev,
+          { id: id, location: currentPos, status: currentStatus },
+        ]);
       }
-      setDevices((prev) => [
-        ...prev,
-        { id: id, location: currentPos, status: currentStatus },
-      ]);
+
+     
       // console.log(devices);
       // console.log(currentPos);
     }
+    setFetching(false)
   };
 
-    useEffect(() => {
-    setTimeout(()=> fetchData(), 1000) 
+  useEffect(() => {
+    fetchData();
   }, []);
 
   return (
     <>
       <View style={styles.container}>
-        {(devices.length > 0 && (
-          <ArduinoList devices={devices} navigation={navigation} />
-        )) || (
+        {(devices.length > 0 && ( <ArduinoList devices={devices} navigation={navigation} /> )) 
+        || (
           <View style={{ flex: 1 }}>
             <Text style={styles.subtitle}> Actualizar para obtener datos </Text>
             <AntDesign
@@ -140,176 +147,174 @@ const HomeScreen = ({ navigation }) => {
 
 const ArduinoList = ({ devices, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  
 
   const renderItem = ({ item }) => {
-
-    return(
-    <>
-      <View
-        style={{
-          backgroundColor: "#fff",
-          borderRadius: 10,
-          borderWidth: 1,
-          borderColor: "#ccc",
-          flex: 1,
-          flexDirection: "row",
-          marginTop: 10,
-        }}
-      >
-        <TouchableOpacity
-          style={{
-            alignContent: "center",
-            alignItems: "center",
-            flex: 1,
-            flexDirection: "row",
-            width: 80,
-            maxWidth: "30%",
-            borderBottomLeftRadius: 10,
-            borderTopLeftRadius: 10,
-            backgroundColor:
-              item.location.type == 1 || item.status.type == 1
-                ? "red"
-                : "#247ba0",
-            padding: 10,
-          }}
-          onPress={() => navigation.navigate("StadisticsList", { id: item.id })}
-        >
-          <AntDesign
-            name="calculator"
-            size={30}
-            style={{
-              color: "white",
-              alignSelf: "center",
-              marginRight: 5,
-            }}
-          />
-          <Text
-            style={{
-              color: "white",
-              fontSize: 20,
-              textAlignVertical: "center",
-              textAlign: "center",
-            }}
-          >
-            ID: {item.id}
-          </Text>
-        </TouchableOpacity>
-
+    return (
+      <>
         <View
           style={{
+            backgroundColor: "#fff",
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: "#ccc",
             flex: 1,
-            flexDirection: "column",
-            alignItems: "flex-start",
-            width: "95%",
-            padding: 10,
+            flexDirection: "row",
+            marginTop: 10,
           }}
         >
           <TouchableOpacity
             style={{
+              alignContent: "center",
+              alignItems: "center",
               flex: 1,
               flexDirection: "row",
-              marginVertical: "auto",
-              marginHorizontal: 10,
-              alignContent: "center",
+              width: 80,
+              maxWidth: "30%",
+              borderBottomLeftRadius: 10,
+              borderTopLeftRadius: 10,
+              backgroundColor:
+                (item.location != undefined && item.location.type == 1) || item.status.type == 1
+                  ? "red"
+                  : "#247ba0",
+              padding: 10,
             }}
             onPress={() =>
-              navigation.navigate("StatusPage", { id: item.id })
+              navigation.navigate("StadisticsList", { id: item.id })
             }
           >
             <AntDesign
-              name="exclamationcircleo"
+              name="calculator"
               size={30}
               style={{
-                color: item.status.type == 1 ? "red" : "green",
+                color: "white",
                 alignSelf: "center",
+                marginRight: 5,
               }}
             />
-
-            <View
+            <Text
               style={{
-                flex: 1,
-                flexDirection: "column",
-                alignItems: "flex-start",
-                marginLeft: 10,
+                color: "white",
+                fontSize: 20,
+                textAlignVertical: "center",
+                textAlign: "center",
               }}
             >
-              <Text
-                style={{
-                  fontWeight: "bold",
-                  textAlign: "left",
-                  alignSelf: "flex-start",
-                }}
-              >
-                Estado
-              </Text>
-              <Text style={{ textAlign: "left", alignSelf: "flex-start" }}>
-                {item.status.info}
-              </Text>
-            </View>
+              ID: {item.id}
+            </Text>
           </TouchableOpacity>
 
           <View
             style={{
-              backgroundColor: "#ccc",
-              marginHorizontal: 10, // Adjust the margin as needed
-              width: "90%",
-              height: 1,
-              marginVertical: 5,
-            }}
-          ></View>
-
-          <TouchableOpacity
-            style={{
               flex: 1,
-              flexDirection: "row",
-              marginVertical: "auto",
-              marginHorizontal: 10,
+              flexDirection: "column",
               alignItems: "flex-start",
+              width: "95%",
+              padding: 10,
             }}
-            onPress={() => setModalVisible(item.id)}
           >
-            <AntDesign
-              name="enviroment"
-              size={30}
+            <TouchableOpacity
               style={{
-                color: item.location.type == 1 ? "red" : "green",
-                alignSelf: "center",
+                flex: 1,
+                flexDirection: "row",
+                marginVertical: "auto",
+                marginHorizontal: 10,
+                alignContent: "center",
               }}
-            />
+              onPress={() => navigation.navigate("StatusPage", { id: item.id })}
+            >
+              <AntDesign
+                name="exclamationcircleo"
+                size={30}
+                style={{
+                  color: item.status.type == 1 ? "red" : "green",
+                  alignSelf: "center",
+                }}
+              />
+
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  marginLeft: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: "left",
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  Estado
+                </Text>
+                <Text style={{ textAlign: "left", alignSelf: "flex-start" }}>
+                  {item.status.info}
+                </Text>
+              </View>
+            </TouchableOpacity>
 
             <View
               style={{
-                flex: 1,
-                flexDirection: "column",
-                alignItems: "flex-start",
-                marginLeft: 10,
+                backgroundColor: "#ccc",
+                marginHorizontal: 10, // Adjust the margin as needed
+                width: "90%",
+                height: 1,
+                marginVertical: 5,
               }}
-            >
-              <Text style={{ fontWeight: "bold", textAlign: "left" }}>
-                Ubicacion
-              </Text>
-              <Text style={{ textAlign: "left" }}>
-                [{item.location.latitude}, {item.location.longitude}]
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
+            ></View>
 
-      {modalVisible == item.id && (
-        <Modal
-          style={{ width: 0 }}
-          modalVisible={modalVisible == item.id }
-          setModalVisible={setModalVisible}
-          tittle={"¿Abrir en el mapa?"}
-          onOk={() =>
-            openGoogleMaps(item.location.latitude, item.location.longitude)
-          }
-        />
-      )}
-    </>
-  )
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                marginVertical: "auto",
+                marginHorizontal: 10,
+                alignItems: "flex-start",
+              }}
+              onPress={() =>{ if(item.location){ setModalVisible(item.id) }}}
+            >
+              <AntDesign
+                name="enviroment"
+                size={30}
+                style={{
+                  color: (item.location != undefined && item.location.type == 1) ? "red" : "green",
+                  alignSelf: "center",
+                }}
+              />
+
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  marginLeft: 10,
+                }}
+              >
+                <Text style={{ fontWeight: "bold", textAlign: "left" }}>
+                  Ubicacion
+                </Text>
+                <Text style={{ textAlign: "left" }}>
+                  {item.location ? `[${item.location.latitude}, ${item.location.longitude} ]` :"No hay" }
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {modalVisible == item.id && (
+          <Modal
+            style={{ width: 0 }}
+            modalVisible={modalVisible == item.id}
+            setModalVisible={setModalVisible}
+            tittle={"¿Abrir en el mapa?"}
+            onOk={() =>
+              openGoogleMaps(item.location.latitude, item.location.longitude)
+            }
+          />
+        )}
+      </>
+    );
   };
 
   return (
