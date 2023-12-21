@@ -33,3 +33,10 @@ Si prefieres descargar la aplicación como un paquete de instalación (APK) desd
 
 3. **Instala la Aplicación:**
    - Transfiere el archivo APK a tu dispositivo móvil y instala la aplicación.
+  
+## Guias y documentacion
+Para mas informacion sobre el proyecto se pueden visitar los siguientes enlaces
+- [01 Configurando el IDE](https://docs.google.com/document/d/1T85zK3a1arQwoyh2HpyoMMTzWf0UbDVQ5MWInLmmD9I/edit?usp=sharing)
+- [02 Guia del Codigo: Maquetas](https://docs.google.com/document/d/1RCGMIs21hFFMJ7irf0WU2zNcz3wlClCO95bBUO3wlt0/edit?usp=sharing)
+- [03 Guia del Codigo: App](https://docs.google.com/document/d/1Rf8MeAHpPTXxu9v88CpX-v1LIlPitKlzL40rkfOC7sE/edit?usp=sharing)
+
